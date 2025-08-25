@@ -52,7 +52,9 @@ public class DynamicOptionsManager
         OpenAIOptions.ChatModel = await _configService.GetValueAsync<string>("ChatModel") ?? "";
         OpenAIOptions.AnalysisModel = await _configService.GetValueAsync<string>("AnalysisModel") ?? "";
         OpenAIOptions.ChatApiKey = await _configService.GetValueAsync<string>("ChatApiKey") ?? "";
+        OpenAIOptions.AnalysisApiKey = await _configService.GetValueAsync<string>("AnalysisApiKey") ?? "";
         OpenAIOptions.Endpoint = await _configService.GetValueAsync<string>("Endpoint") ?? "";
+        OpenAIOptions.AnalysisEndpoint = await _configService.GetValueAsync<string>("AnalysisEndpoint") ?? "";
         OpenAIOptions.ModelProvider = await _configService.GetValueAsync<string>("ModelProvider") ?? "OpenAI";
         OpenAIOptions.MaxFileLimit = await _configService.GetValueAsync<int>("MaxFileLimit", 10);
         OpenAIOptions.DeepResearchModel = await _configService.GetValueAsync<string>("DeepResearchModel") ?? "";
@@ -70,6 +72,18 @@ public class DynamicOptionsManager
         if (string.IsNullOrEmpty(OpenAIOptions.AnalysisModel))
         {
             OpenAIOptions.AnalysisModel = OpenAIOptions.ChatModel;
+        }
+
+        // 如果AnalysisApiKey为空，使用ChatApiKey
+        if (string.IsNullOrEmpty(OpenAIOptions.AnalysisApiKey))
+        {
+            OpenAIOptions.AnalysisApiKey = OpenAIOptions.ChatApiKey;
+        }
+
+        // 如果AnalysisEndpoint为空，使用Endpoint
+        if (string.IsNullOrEmpty(OpenAIOptions.AnalysisEndpoint))
+        {
+            OpenAIOptions.AnalysisEndpoint = OpenAIOptions.Endpoint;
         }
 
         _logger.LogDebug("OpenAI配置已加载");

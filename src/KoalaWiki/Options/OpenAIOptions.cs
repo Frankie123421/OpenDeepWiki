@@ -22,9 +22,19 @@ public class OpenAIOptions
     public static string ChatApiKey { get; set; } = string.Empty;
 
     /// <summary>
+    /// 分析模型API密钥
+    /// </summary>
+    public static string AnalysisApiKey { get; set; } = string.Empty;
+
+    /// <summary>
     /// API地址
     /// </summary>
     public static string Endpoint { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 分析模型API地址
+    /// </summary>
+    public static string AnalysisEndpoint { get; set; } = string.Empty;
 
     /// <summary>
     /// 模型提供商
@@ -58,8 +68,12 @@ public class OpenAIOptions
                          configuration.GetValue<string>("AnalysisModel") ?? string.Empty).GetTrimmedValueOrEmpty();
         ChatApiKey = (configuration.GetValue<string>("CHAT_API_KEY") ??
                       configuration.GetValue<string>("ChatApiKey") ?? string.Empty).GetTrimmedValueOrEmpty();
+        AnalysisApiKey = (configuration.GetValue<string>("ANALYSIS_API_KEY") ??
+                         configuration.GetValue<string>("AnalysisApiKey") ?? string.Empty).GetTrimmedValueOrEmpty();
         Endpoint = (configuration.GetValue<string>("ENDPOINT") ??
                     configuration.GetValue<string>("Endpoint") ?? string.Empty).GetTrimmedValueOrEmpty();
+        AnalysisEndpoint = (configuration.GetValue<string>("ANALYSIS_ENDPOINT") ??
+                           configuration.GetValue<string>("AnalysisEndpoint") ?? string.Empty).GetTrimmedValueOrEmpty();
         ModelProvider = (configuration.GetValue<string>("MODEL_PROVIDER") ??
                          configuration.GetValue<string>("ModelProvider")).GetTrimmedValueOrEmpty();
 
@@ -116,6 +130,18 @@ public class OpenAIOptions
         if (string.IsNullOrEmpty(AnalysisModel))
         {
             AnalysisModel = ChatModel;
+        }
+
+        // 如果没设置分析模型API key则使用聊天模型的API key
+        if (string.IsNullOrEmpty(AnalysisApiKey))
+        {
+            AnalysisApiKey = ChatApiKey;
+        }
+
+        // 如果没设置分析模型endpoint则使用聊天模型的endpoint
+        if (string.IsNullOrEmpty(AnalysisEndpoint))
+        {
+            AnalysisEndpoint = Endpoint;
         }
     }
 }

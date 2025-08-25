@@ -34,7 +34,7 @@ public class DocumentsHelper
                 WarehouseId = warehouse.Id,
                 Description = item.title,
                 Id = Guid.NewGuid() + item.title,
-                Name = item.name,
+                Name = item.name ?? "Untitled",
                 Url = url,
                 DucumentId = document.Id,
                 ParentId = parentId,

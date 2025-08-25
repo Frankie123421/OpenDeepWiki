@@ -341,6 +341,8 @@ public class DynamicConfigService
             // OpenAI 配置映射
             { "ChatModel", new[] { "CHAT_MODEL", "ChatModel" } },
             { "AnalysisModel", new[] { "ANALYSIS_MODEL", "AnalysisModel" } },
+            { "AnalysisApiKey", new[] { "ANALYSIS_API_KEY", "AnalysisApiKey" } },
+            { "AnalysisEndpoint", new[] { "ANALYSIS_ENDPOINT", "AnalysisEndpoint" } },
             { "ChatApiKey", new[] { "CHAT_API_KEY", "ChatApiKey" } },
             { "Endpoint", new[] { "ENDPOINT", "Endpoint" } },
             { "ModelProvider", new[] { "MODEL_PROVIDER", "ModelProvider" } },

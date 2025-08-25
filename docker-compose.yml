@@ -5,17 +5,20 @@
       - KOALAWIKI_REPOSITORIES=/repositories
       - TASK_MAX_SIZE_PER_USER=5 # 每个用户AI处理文档生成的最大数量
       - REPAIR_MERMAID=1 # 是否进行Mermaid修复，1修复，其余不修复
-      - CHAT_MODEL=DeepSeek-V3 # 必须要支持function的模型
+      - CHAT_MODEL= # 必须要支持function的模型
       - ANALYSIS_MODEL= # 分析模型，用于生成仓库目录结构，这个很重要，模型越强，生成的目录结构越好，为空则使用ChatModel
                         # 分析模型建议使用GPT-4.1  , CHAT模型可以用其他模型生成文档,以节省 token 开销
       - CHAT_API_KEY= #您的APIkey
+      - ANALYSIS_API_KEY= # 分析模型的API key，为空则使用CHAT_API_KEY
+      - ANALYSIS_ENDPOINT= # 分析模型的API endpoint，为空则使用ENDPOINT
       - LANGUAGE= # 设置生成语言默认为“中文”, 英文可以填写 English 或 英文
-      - ENDPOINT=https://api.token-ai.cn/v1
-      - DB_TYPE=sqlite
-      - DB_CONNECTION_STRING=Data Source=/data/KoalaWiki.db
+      - ENDPOINT=
+      - DB_TYPE=postgres
+      - DB_CONNECTION_STRING=Host=host.docker.internal;Database=KoalaWiki;Username=postgres;Password=123456
       - UPDATE_INTERVAL=5 # 仓库增量更新间隔，单位天
+      - ENABLE_CODE_COMPRESSION=true
       - EnableSmartFilter=true # 是否启用智能过滤，这可能影响AI得到仓库的文件目录
-      - ENABLE_INCREMENTAL_UPDATE=true # 是否启用增量更新
+      - ENABLE_INCREMENTAL_UPDATE=false # 是否启用增量更新
       - ENABLE_CODED_DEPENDENCY_ANALYSIS=false # 是否启用代码依赖分析？这可能会对代码的质量产生影响。
       - ENABLE_WAREHOUSE_FUNCTION_PROMPT_TASK=false # 是否启用MCP Prompt生成
       - ENABLE_WAREHOUSE_DESCRIPTION_TASK=false # 是否启用仓库Description生成

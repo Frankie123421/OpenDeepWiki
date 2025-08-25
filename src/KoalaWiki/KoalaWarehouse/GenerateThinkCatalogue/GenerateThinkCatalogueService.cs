@@ -133,8 +133,8 @@ public static partial class GenerateThinkCatalogueService
             new TextContent(Prompt.Language)
         });
 
-        var analysisModel = KernelFactory.GetKernel(OpenAIOptions.Endpoint,
-            OpenAIOptions.ChatApiKey, path, OpenAIOptions.AnalysisModel, false);
+        var analysisModel = KernelFactory.GetKernel(OpenAIOptions.AnalysisEndpoint,
+            OpenAIOptions.AnalysisApiKey, path, OpenAIOptions.AnalysisModel, false);
 
         var chat = analysisModel.Services.GetService<IChatCompletionService>();
         if (chat == null)

@@ -127,8 +127,8 @@ public partial class DocumentsService
 
         Log.Logger.Information("开始优化目录结构");
 
-        var analysisModel = KernelFactory.GetKernel(OpenAIOptions.Endpoint,
-            OpenAIOptions.ChatApiKey, path, OpenAIOptions.AnalysisModel);
+        var analysisModel = KernelFactory.GetKernel(OpenAIOptions.AnalysisEndpoint,
+            OpenAIOptions.AnalysisApiKey, path, OpenAIOptions.AnalysisModel);
 
         var codeDirSimplifier = analysisModel.Plugins["CodeAnalysis"]["CodeDirSimplifier"];
 
