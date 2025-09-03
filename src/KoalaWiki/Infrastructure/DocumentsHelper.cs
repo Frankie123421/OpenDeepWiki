@@ -137,6 +137,7 @@ public class DocumentsHelper
             "gemini-2.5-flash" => 32768,
             "Qwen3-32B" => 32768,
             "glm-4.5" => 32768,
+            "zai-org/glm-4.5" => 32768,
             "glm-4.5v" => 32768,
             "deepseek-r1:32b-qwen-distill-fp16" => 32768,
             _ => null
@@ -149,20 +150,22 @@ public class DocumentsHelper
     /// <returns></returns>
     public static string[] GetIgnoreFiles(string path)
     {
+        var ignoreFiles = new List<string>();
+        
         var ignoreFilePath = Path.Combine(path, ".gitignore");
         if (File.Exists(ignoreFilePath))
         {
             // 需要去掉注释
             var lines = File.ReadAllLines(ignoreFilePath);
-            var ignoreFiles = lines.Where(x => !string.IsNullOrWhiteSpace(x) && !x.StartsWith("#"))
-                .Select(x => x.Trim()).ToList();
-
-            ignoreFiles.AddRange(DocumentOptions.ExcludedFiles);
-
-            return ignoreFiles.ToArray();
+            ignoreFiles.AddRange(lines.Where(x => !string.IsNullOrWhiteSpace(x) && !x.StartsWith("#"))
+                .Select(x => x.Trim()));
         }
 
-        return [];
+        // 始终添加配置的排除文件和文件夹
+        ignoreFiles.AddRange(DocumentOptions.ExcludedFiles);
+        ignoreFiles.AddRange(DocumentOptions.ExcludedFolders);
+
+        return ignoreFiles.ToArray();
     }
 
     public static List<PathInfo> GetCatalogueFiles(string path)

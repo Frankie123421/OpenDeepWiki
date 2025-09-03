@@ -87,6 +87,7 @@
     <PackageVersion Include="FastService.Analyzers" Version="0.2.2" />
     <!-- 协议支持 -->
     <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="0.3.0-preview.3" />
+    <PackageVersion Include="SharpToken" Version="2.0.4" />
     <!-- Thor 框架相关包 (来自子模块) -->
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.6.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.2" />

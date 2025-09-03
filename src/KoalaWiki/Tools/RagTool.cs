@@ -2,11 +2,10 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Mem0.NET;
-using Microsoft.SemanticKernel;
 
-namespace KoalaWiki.Functions;
+namespace KoalaWiki.Tools;
 
-public class RagFunction(string warehouseId)
+public class RagTool(string warehouseId)
 {
     private readonly Mem0Client _mem0Client = new(OpenAIOptions.Mem0ApiKey, OpenAIOptions.Mem0Endpoint, null, null,
         new HttpClient()
@@ -19,7 +18,7 @@ public class RagFunction(string warehouseId)
         });
 
 
-    [KernelFunction("RagSearch"), Description("Search and retrieve relevant code or documentation content from the current repository index using specific keywords.")]
+    [KernelFunction("rag_search"), Description("Search and retrieve relevant code or documentation content from the current repository index using specific keywords.")]
     public async Task<string> SearchAsync(
         [Description("Detailed description of the code or documentation you need. Specify whether you're looking for a function, class, method, or specific documentation. Be as specific as possible to improve search accuracy.")]
         string query,

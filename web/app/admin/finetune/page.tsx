@@ -173,7 +173,7 @@ export default function FinetunePage() {
                 <TableRow key={dataset.id}>
                   <TableCell>
                     <button
-                      className="text-blue-600 hover:text-blue-800 font-medium"
+                      className="text-foreground hover:text-muted-foreground font-medium"
                       onClick={() => router.push(`/admin/finetune/dataset/${dataset.id}`)}
                     >
                       {dataset.name}

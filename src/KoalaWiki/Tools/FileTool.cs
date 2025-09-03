@@ -4,15 +4,18 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 using OpenDeepWiki.CodeFoundation;
 using OpenDeepWiki.CodeFoundation.Utils;
 
-namespace KoalaWiki.Functions;
+namespace KoalaWiki.Tools;
 
-public class FileFunction(string gitPath, List<string>? files)
+public class FileTool(string gitPath, List<string>? files)
 {
     private readonly CodeCompressionService _codeCompressionService = new();
-    private int _count;
+    private static readonly ConcurrentDictionary<string, Regex> _regexCache = new();
+    private int _readTokens = 0;
 
     /// <summary>
     /// 获取当前仓库压缩结构
@@ -35,15 +38,10 @@ public class FileFunction(string gitPath, List<string>? files)
         try
         {
             // 检查是否已达到文件读取限制
-            if (DocumentOptions.MaxFileReadCount > 0 &&
-                _count >= DocumentOptions.MaxFileReadCount)
+            if (DocumentOptions.ReadMaxTokens > 0 &&
+                _readTokens >= DocumentOptions.ReadMaxTokens)
             {
-                int i = _count;
-                _count = 0;
-
-                return "🚨 FILE READ LIMIT EXCEEDED 🚨\n" +
-                       $"Current attempts: {i}/{DocumentOptions.MaxFileReadCount}\n" +
-                       "⛔ STOP reading files immediately and complete analysis with existing da2000ta.";
+                return "FILE READ LIMIT EXCEEDED STOP reading files immediately and complete analysis ";
             }
 
             files?.Add(filePath);
@@ -72,7 +70,7 @@ public class FileFunction(string gitPath, List<string>? files)
                 content = _codeCompressionService.CompressCode(content, filePath);
             }
 
-            _count++;
+            _readTokens += TokenHelper.GetTokens(content);
 
             return content;
         }
@@ -81,6 +79,111 @@ public class FileFunction(string gitPath, List<string>? files)
             // 处理异常
             Console.WriteLine($"Error reading file: {ex.Message}");
             return $"Error reading file: {ex.Message}";
+        }
+    }
+
+    // Optimized file search with optional ignore and precompiled regex
+    private void SearchFilesOptimized(
+        string directory,
+        string pattern,
+        List<string> results,
+        string baseDirectory,
+        string[]? ignoreFiles,
+        bool isSimpleExtensionPattern,
+        Regex? compiledRegex)
+    {
+        if (string.IsNullOrEmpty(baseDirectory)) baseDirectory = directory;
+
+        var directoriesToSearch = new Stack<string>();
+        directoriesToSearch.Push(directory);
+
+        while (directoriesToSearch.Count > 0)
+        {
+            var currentDir = directoriesToSearch.Pop();
+            try
+            {
+                IEnumerable<string> files = isSimpleExtensionPattern
+                    ? Directory.EnumerateFiles(currentDir, pattern, SearchOption.TopDirectoryOnly)
+                    : Directory.EnumerateFiles(currentDir);
+
+                foreach (var file in files)
+                {
+                    if (ignoreFiles is { Length: > 0 } && IsIgnoredFile(file, ignoreFiles))
+                        continue;
+
+                    var fileName = Path.GetFileName(file);
+                    var relativePath = GetRelativePath(baseDirectory, file).Replace('\\', '/');
+
+                    if (isSimpleExtensionPattern)
+                    {
+                        results.Add(relativePath);
+                    }
+                    else if (compiledRegex != null)
+                    {
+                        if (compiledRegex.IsMatch(fileName) || compiledRegex.IsMatch(relativePath))
+                        {
+                            results.Add(relativePath);
+                        }
+                    }
+                    else if (IsMatch(fileName, relativePath, pattern))
+                    {
+                        results.Add(relativePath);
+                    }
+                }
+
+                var directories = Directory.EnumerateDirectories(currentDir);
+                foreach (var subDir in directories)
+                {
+                    var dirName = Path.GetFileName(subDir);
+                    if (dirName.StartsWith('.') ||
+                        dirName.Equals("bin", StringComparison.OrdinalIgnoreCase) ||
+                        dirName.Equals("obj", StringComparison.OrdinalIgnoreCase) ||
+                        dirName.Equals("node_modules", StringComparison.OrdinalIgnoreCase) ||
+                        dirName.Equals(".git", StringComparison.OrdinalIgnoreCase) ||
+                        dirName.Equals(".vs", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    if (ignoreFiles is { Length: > 0 })
+                    {
+                        bool shouldIgnore = false;
+                        foreach (var rule in ignoreFiles)
+                        {
+                            if (string.IsNullOrWhiteSpace(rule) || rule.StartsWith('#')) continue;
+                            var trimmed = rule.Trim();
+                            var isDirRule = trimmed.EndsWith("/");
+                            if (isDirRule) trimmed = trimmed.TrimEnd('/');
+
+                            if (trimmed.Contains('*'))
+                            {
+                                var rx = "^" + Regex.Escape(trimmed).Replace("\\*", ".*") + "$";
+                                if (Regex.IsMatch(dirName, rx, RegexOptions.IgnoreCase))
+                                {
+                                    shouldIgnore = true;
+                                    break;
+                                }
+                            }
+                            else if (dirName.Equals(trimmed, StringComparison.OrdinalIgnoreCase))
+                            {
+                                shouldIgnore = true;
+                                break;
+                            }
+                        }
+                        if (shouldIgnore) continue;
+                    }
+
+                    directoriesToSearch.Push(subDir);
+                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // ignore
+            }
+            catch (Exception)
+            {
+                // ignore
+            }
         }
     }
 
@@ -138,25 +241,45 @@ public class FileFunction(string gitPath, List<string>? files)
                 return $"Directory not found: {path.Replace(gitPath, "").TrimStart(Path.DirectorySeparatorChar)}";
             }
 
-// 检查目录是否存在
+            // 检查目录是否存在
             if (!Directory.Exists(path))
             {
                 return $"Directory not found: {path.Replace(gitPath, "").TrimStart(Path.DirectorySeparatorChar)}";
             }
 
-// 获取忽略文件列表
+            // 获取忽略文件列表
+            // Optimize start directory by narrowing scan scope via fixed prefix in pattern
+            var __prefix = GetFixedPrefixDirectory(pattern);
+            if (!string.IsNullOrEmpty(__prefix))
+            {
+                var __prefixed = Path.Combine(path, __prefix.Replace('/', Path.DirectorySeparatorChar));
+                if (Directory.Exists(__prefixed))
+                {
+                    path = __prefixed;
+                }
+            }
+
             var ignoreFiles = DocumentsHelper.GetIgnoreFiles(gitPath);
 
-// 使用改进的文件搜索方法
-            var matchedFiles = new List<string>();
-            SearchFiles(path, pattern, matchedFiles, gitPath);
+            // precompute matching
+            var isSimpleExt = pattern.StartsWith("*.") && !pattern.Contains('/') && !pattern.Contains('\\');
+            Regex? compiledRegex = null;
+            if (!isSimpleExt)
+            {
+                compiledRegex = _regexCache.GetOrAdd(pattern,
+                    p => new Regex(ConvertGlobToRegex(p), RegexOptions.IgnoreCase | RegexOptions.Compiled));
+            }
 
-// 排除忽略文件
+            // 使用改进的文件搜索方法
+            var matchedFiles = new List<string>();
+            SearchFilesOptimized(path, pattern, matchedFiles, gitPath, ignoreFiles, isSimpleExt, compiledRegex);
+
+            // 排除忽略文件
             matchedFiles = matchedFiles
-                .Where(f => !ignoreFiles.Any(ignore => IsIgnoredFile(f, ignoreFiles)))
+                .Where(f => !IsIgnoredFile(f, ignoreFiles))
                 .ToList();
 
-// 按修改时间排序
+            // 按修改时间排序
             var sortedFiles = matchedFiles
                 .Select(f => new FileInfo(Path.Combine(gitPath, f.Replace('/', Path.DirectorySeparatorChar))))
                 .Where(fi => fi.Exists)
@@ -164,7 +287,7 @@ public class FileFunction(string gitPath, List<string>? files)
                 .Select(fi => fi.FullName)
                 .ToList();
 
-// 处理路径，去掉gitPath前缀
+            // 处理路径，去掉gitPath前缀
             var relativePaths = sortedFiles
                 .Select(f => f.Replace(gitPath, "").TrimStart(Path.DirectorySeparatorChar))
                 .Select(f => f.Replace(Path.DirectorySeparatorChar, '/')) // 统一使用正斜杠
@@ -210,8 +333,8 @@ public class FileFunction(string gitPath, List<string>? files)
             var allFiles = Directory.GetFiles(searchPath, "*.*", searchOption);
 
             // 创建正则表达式来匹配glob模式
-            var regexPattern = ConvertGlobToRegex(pattern);
-            var regex = new Regex(regexPattern, RegexOptions.IgnoreCase);
+            var regex = _regexCache.GetOrAdd(pattern,
+                p => new Regex(ConvertGlobToRegex(p), RegexOptions.IgnoreCase | RegexOptions.Compiled));
 
             foreach (var file in allFiles)
             {
@@ -302,7 +425,7 @@ public class FileFunction(string gitPath, List<string>? files)
 
         foreach (var pattern in ignoreFiles)
         {
-            if (string.IsNullOrWhiteSpace(pattern) || pattern.StartsWith("#"))
+            if (string.IsNullOrEmpty(pattern) || pattern.StartsWith('#'))
                 continue;
 
             var trimmedPattern = pattern.Trim();
@@ -342,28 +465,15 @@ public class FileFunction(string gitPath, List<string>? files)
          """)]
     public async Task<string> ReadFileFromLineAsync(
         [Description(
-            "The Read File List.")]
-        ReadFileItemInput[] items)
+            "The Read File")]
+        ReadFileItemInput? item)
     {
         // 检查是否已达到文件读取限制
-        if (DocumentOptions.MaxFileReadCount > 0 &&
-            _count >= DocumentOptions.MaxFileReadCount)
+        if (DocumentOptions.ReadMaxTokens > 0 &&
+            _readTokens >= DocumentOptions.ReadMaxTokens)
         {
-            int i = _count;
-            _count = 0;
-
-            return JsonSerializer.Serialize(new Dictionary<string, string>
-                   {
-                       ["system_warning"] =
-                           $"File read limit exceeded ({i}/{DocumentOptions.MaxFileReadCount})"
-                   }, new JsonSerializerOptions()
-                   {
-                       Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                       PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                   }) +
-                   "\n\n<system-reminder>\n" +
+            return "\n\n<system-reminder>\n" +
                    "CRITICAL: FILE READ LIMIT EXCEEDED \n" +
-                   $"Current attempts: {i}/{DocumentOptions.MaxFileReadCount}\n" +
                    "IMMEDIATE ACTION REQUIRED:\n" +
                    "• STOP reading files NOW\n" +
                    "• Use ONLY the information you have already gathered\n" +
@@ -373,46 +483,7 @@ public class FileFunction(string gitPath, List<string>? files)
                    "</system-reminder>";
         }
 
-        items = items.DistinctBy(item => $"FilePath:{item.FilePath}\noffset:" + item.Offset + "\nlimit" + item.Limit)
-            .ToArray();
-
-        var dic = new Dictionary<string, string>();
-        foreach (var item in items)
-        {
-            dic.Add($"FilePath:{item.FilePath}\noffset:" + item.Offset + "\nlimit" + item.Limit,
-                await ReadItem(item.FilePath, item.Offset, item.Limit));
-        }
-
-        // 如果单次读取文件数量超过5个，每5个算一次
-        if (items.Length > 5)
-        {
-            _count += (int)Math.Ceiling((double)items.Length / 5);
-        }
-        else
-        {
-            _count++;
-        }
-
-        // 在接近限制时发送警告
-        if (DocumentOptions.MaxFileReadCount > 0 &&
-            _count >= DocumentOptions.MaxFileReadCount * 0.8)
-        {
-            return JsonSerializer.Serialize(dic, new JsonSerializerOptions()
-                   {
-                       Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                       PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                   }) +
-                   "\n\n<system-warning>\n" +
-                   $"⚠️ Approaching file read limit: {_count}/{DocumentOptions.MaxFileReadCount}\n" +
-                   "Consider completing your analysis soon to avoid hitting the limit.\n" +
-                   "</system-warning>";
-        }
-
-        return JsonSerializer.Serialize(dic, new JsonSerializerOptions()
-        {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+        return await ReadItem(item.FilePath, item.Offset, item.Limit);
     }
 
 
@@ -494,7 +565,9 @@ public class FileFunction(string gitPath, List<string>? files)
             // 将结果行号从1开始
             var numberedLines = resultLines.Select((line, index) => $"{index + 1}: {line}").ToList();
 
-            return string.Join("\n", numberedLines);
+            var content = string.Join("\n", numberedLines);
+            _readTokens += TokenHelper.GetTokens(content);
+            return content;
         }
         catch (Exception ex)
         {
@@ -524,8 +597,8 @@ public class FileFunction(string gitPath, List<string>? files)
             try
             {
                 // 搜索当前目录中的文件
-                var files = Directory.GetFiles(currentDir);
-                foreach (var file in files)
+                var enumerateFiles = Directory.EnumerateFiles(currentDir);
+                foreach (var file in enumerateFiles)
                 {
                     var fileName = Path.GetFileName(file);
                     var relativePath = GetRelativePath(baseDirectory, file).Replace('\\', '/');
@@ -537,12 +610,12 @@ public class FileFunction(string gitPath, List<string>? files)
                 }
 
                 // 将子目录添加到栈中进行后续搜索
-                var directories = Directory.GetDirectories(currentDir);
+                var directories = Directory.EnumerateDirectories(currentDir);
                 foreach (var subDir in directories)
                 {
                     // 跳过一些常见的不需要搜索的目录
                     var dirName = Path.GetFileName(subDir);
-                    if (dirName.StartsWith(".") ||
+                    if (dirName.StartsWith('.') ||
                         dirName.Equals("bin", StringComparison.OrdinalIgnoreCase) ||
                         dirName.Equals("obj", StringComparison.OrdinalIgnoreCase) ||
                         dirName.Equals("node_modules", StringComparison.OrdinalIgnoreCase) ||
@@ -574,16 +647,16 @@ public class FileFunction(string gitPath, List<string>? files)
         try
         {
             // 如果是简单的文件名模式（如 *.js, *.ts）
-            if (pattern.StartsWith("*.") && !pattern.Contains("/") && !pattern.Contains("\\"))
+            if (pattern.StartsWith("*.") && !pattern.Contains('/') && !pattern.Contains('\\'))
             {
-                var extension = pattern.Substring(1); // 去掉 *
+                var extension = pattern[1..]; // 去掉 *
                 return fileName.EndsWith(extension, StringComparison.OrdinalIgnoreCase);
             }
 
             // 使用正则表达式匹配复杂的glob模式
-            var regexPattern = ConvertGlobToRegex(pattern);
-            var regex = new Regex(regexPattern, RegexOptions.IgnoreCase);
-            
+            var regex = _regexCache.GetOrAdd(pattern,
+                p => new Regex(ConvertGlobToRegex(p), RegexOptions.IgnoreCase | RegexOptions.Compiled));
+
             // 同时检查文件名和相对路径
             return regex.IsMatch(fileName) || regex.IsMatch(relativePath);
         }
@@ -597,6 +670,7 @@ public class FileFunction(string gitPath, List<string>? files)
     /// <summary>
     /// 获取相对路径
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private string GetRelativePath(string basePath, string fullPath)
     {
         try
@@ -608,6 +682,22 @@ public class FileFunction(string gitPath, List<string>? files)
             // 如果获取相对路径失败，返回文件名
             return Path.GetFileName(fullPath);
         }
+    }
+
+    // Extract fixed directory prefix (stop before any wildcard), to reduce scan scope
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static string GetFixedPrefixDirectory(string pattern)
+    {
+        if (string.IsNullOrEmpty(pattern)) return string.Empty;
+        var normalized = pattern.Replace('\\', '/');
+        var parts = normalized.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var prefixParts = new List<string>();
+        foreach (var part in parts)
+        {
+            if (part.IndexOfAny(['*', '?', '[']) >= 0) break;
+            prefixParts.Add(part);
+        }
+        return string.Join('/', prefixParts);
     }
 }
 

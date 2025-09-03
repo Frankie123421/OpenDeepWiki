@@ -130,7 +130,11 @@ services:
       - ENABLE_WAREHOUSE_DESCRIPTION_TASK=true # 是否启用仓库描述任务
       - CATALOGUE_FORMAT=compact # 目录结构格式 (compact, json, pathlist, unix)
       - ENABLE_CODE_COMPRESSION=false # 是否启用代码压缩
-      - MAX_FILE_READ_COUNT=10 # AI最大文件读取数量限制，防止无限制读取文件（默认：10，0表示不限制）
+      - READ_MAX_TOKENS=100000 # AI最大文件读取token数量限制，防止无限制读取文件，建议填写模型最大token的百分之七十
+      # 飞书 Bot 配置（可选，如需接入飞书）
+      - FeishuAppId=
+      - FeishuAppSecret=
+      - FeishuBotName=KoalaWiki
 ```
 
 - AzureOpenAI和Anthropic配置类似，仅需调整 `ENDPOINT` 和 `MODEL_PROVIDER`。
@@ -291,6 +295,57 @@ graph TD
 - `CATALOGUE_FORMAT`：目录结构格式 (compact, json, pathlist, unix)
 - `ENABLE_CODE_COMPRESSION`：是否启用代码压缩
 - `MAX_FILE_READ_COUNT`：AI最大文件读取数量限制，防止无限制读取文件，提高处理效率（默认：10，0表示不限制）
+- `FeishuAppId`：飞书应用 App ID（启用飞书 Bot 必填）
+- `FeishuAppSecret`：飞书应用 App Secret（启用飞书 Bot 必填）
+- `FeishuBotName`：飞书机器人显示名称（可选）
+
+---
+
+# 飞书 Bot 集成 Feishu Bot
+
+- 功能：将当前代码仓库接入飞书群聊/私聊，作为知识机器人进行问答与内容推送。
+- 回调地址：`/api/feishu-bot/{owner}/{name}`（在仓库页面右上角「飞书Bot」按钮内可复制完整 URL）。
+- 要求：服务需公网可访问；暂不支持消息加密（Encrypt Key）。
+
+## 一、在飞书开放平台创建应用
+
+- 类型：企业自建应用（组织内部使用）。
+- 能力：开启“机器人”能力；在“应用发布”中发布为企业可见并安装到企业。
+- 权限（根据平台提示勾选，至少包含）：
+  - 消息发送与相关权限（例如：im:message、im:message:send_as_bot 等）。
+  - 事件订阅相关权限（用于接收消息事件）。
+
+## 二、配置事件订阅（重要）
+
+- 打开“事件订阅”，关闭“加密（Encrypt Key）”。
+- 订阅事件：`im.message.receive_v1`。
+- 请求网址（Request URL）：`https://你的域名/api/feishu-bot/{owner}/{name}`。
+  - `{owner}` 为仓库所属组织或拥有者名称，如 `AIDotNet`。
+  - `{name}` 为仓库名称，如 `OpenDeepWiki`。
+- 保存后完成“URL 验证”（平台会下发 challenge，后端已内置处理）。
+
+提示：也可在 Web 端仓库页面右上角点击「飞书Bot」，一键复制专属回调地址。
+
+## 三、配置服务端环境变量
+
+在后端服务中设置以下环境变量（docker-compose 可参考下方示例）：
+
+- `FeishuAppId`：飞书应用 App ID
+- `FeishuAppSecret`：飞书应用 App Secret
+- `FeishuBotName`：机器人显示名称（可选）
+
+## 四、将机器人拉入群聊并使用
+
+- 安装应用到企业后，将机器人拉入目标群聊。
+- 群聊：@机器人 + 提问（将使用对应仓库的知识进行回答）。
+- 私聊：直接发送问题即可。
+- 支持文本与图片回复（如思维导图等内容）。
+
+## 常见问题 FAQ（飞书）
+
+- 无响应/回调失败：确认 Request URL 可被公网访问，且 Nginx 将 `/api/` 代理到后端。
+- “已开启加密”提示：关闭 Encrypt Key（当前版本不支持加密消息）。
+- 403/权限不足：确认应用已安装到企业，并授予所需权限与事件订阅。
 
 ## 构建不同架构 Build for Different Architectures
 

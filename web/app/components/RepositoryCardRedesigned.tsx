@@ -154,7 +154,7 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({ repository }) => {
               </div>
               
               {/* Forks */}
-              <div className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
+              <div className="flex items-center gap-1 text-muted-foreground">
                 <GitFork className="h-3.5 w-3.5" />
                 <span className="text-sm font-medium">{repository.forks?.toLocaleString() || 0}</span>
               </div>

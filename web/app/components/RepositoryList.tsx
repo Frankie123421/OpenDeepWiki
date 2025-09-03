@@ -2,6 +2,7 @@ import { Repository } from '../types';
 import RepositoryCard from './RepositoryCard';
 import { useTranslation } from '../i18n/client';
 import { FileX } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface RepositoryListProps {
   repositories: Repository[];
@@ -9,10 +10,14 @@ interface RepositoryListProps {
 
 // 简约的空状态组件
 const EmptyState: React.FC<{ description: string }> = ({ description }) => (
-  <div className="flex flex-col items-center justify-center py-16 text-center">
-    <FileX className="h-12 w-12 text-muted-foreground mb-4" />
-    <p className="text-muted-foreground">{description}</p>
-  </div>
+  <Card className="border-dashed border-2 border-muted-foreground/25 bg-muted/30">
+    <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+      <div className="rounded-full bg-muted p-3 mb-4">
+        <FileX className="h-8 w-8 text-muted-foreground" />
+      </div>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </CardContent>
+  </Card>
 );
 
 const RepositoryList: React.FC<RepositoryListProps> = ({ repositories }) => {

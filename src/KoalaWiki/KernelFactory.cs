@@ -4,6 +4,7 @@ using System.Diagnostics;
 using KoalaWiki.Functions;
 using KoalaWiki.Options;
 using KoalaWiki.plugins;
+using KoalaWiki.Tools;
 using Microsoft.SemanticKernel;
 using OpenAI;
 using Serilog;
@@ -99,14 +100,14 @@ public static class KernelFactory
         }
 
         // 添加文件函数
-        var fileFunction = new FileFunction(gitPath, files);
+        var fileFunction = new FileTool(gitPath, files);
         kernelBuilder.Plugins.AddFromObject(fileFunction);
-        kernelBuilder.Plugins.AddFromType<AgentFunction>();
+        kernelBuilder.Plugins.AddFromType<AgentTool>();
         activity?.SetTag("plugins.file_function", "loaded");
 
         if (DocumentOptions.EnableCodeDependencyAnalysis)
         {
-            var codeAnalyzeFunction = new CodeAnalyzeFunction(gitPath);
+            var codeAnalyzeFunction = new CodeAnalyzeTool(gitPath);
             kernelBuilder.Plugins.AddFromObject(codeAnalyzeFunction);
             activity?.SetTag("plugins.code_analyze_function", "loaded");
         }
@@ -114,7 +115,7 @@ public static class KernelFactory
         kernelBuilderAction?.Invoke(kernelBuilder);
         
         var kernel = kernelBuilder.Build();
-        kernel.FunctionInvocationFilters.Add(new FunctionResultInterceptor());
+        kernel.FunctionInvocationFilters.Add(new ToolResultInterceptor());
 
         activity?.SetStatus(ActivityStatusCode.Ok);
         activity?.SetTag("kernel.created", true);

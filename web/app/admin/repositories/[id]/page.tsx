@@ -918,7 +918,7 @@ export default function RepositoryDetailPage() {
               <div className="text-center space-y-2">
                 <Skeleton className="w-32 h-8 mx-auto" />
                 <div className="text-sm text-muted-foreground">AI 内容生成中，请稍候...</div>
-                <p className="text-xs text-blue-600">
+                <p className="text-xs text-muted-foreground">
                   正在根据提示词生成内容，这可能需要一些时间...
                 </p>
               </div>
@@ -943,4 +943,4 @@ export default function RepositoryDetailPage() {
       </Dialog>
     </div>
   );
-} 
+}

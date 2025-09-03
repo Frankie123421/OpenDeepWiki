@@ -55,6 +55,8 @@
     image: mcr.microsoft.com/dotnet/aspire-dashboard
     container_name: aspire-dashboard
     restart: always
+    ports:
+      - 18889:18889
     environment:
       - TZ=Asia/Shanghai
       - Dashboard:ApplicationName=Aspire

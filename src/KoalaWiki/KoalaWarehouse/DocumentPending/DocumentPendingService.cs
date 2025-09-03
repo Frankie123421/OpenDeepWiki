@@ -11,10 +11,8 @@ namespace KoalaWiki.KoalaWarehouse.DocumentPending;
 
 public partial class DocumentPendingService
 {
-    private static int TaskMaxSizePerUser = 5;
+    private static int TaskMaxSizePerUser = 3;
     private static int MinContentLength = 1000;
-    private static int MinMermaidDiagrams = 3;
-    private static int MinCitations = 5;
     private static double MinQualityScore = 60.0;
     private static double MinChineseRatio = 0.3;
 
@@ -33,19 +31,7 @@ public partial class DocumentPendingService
         {
             MinContentLength = lengthInt;
         }
-
-        var minMermaid = Environment.GetEnvironmentVariable("DOC_MIN_MERMAID_DIAGRAMS").GetTrimmedValueOrEmpty();
-        if (!string.IsNullOrEmpty(minMermaid) && int.TryParse(minMermaid, out var mermaidInt))
-        {
-            MinMermaidDiagrams = mermaidInt;
-        }
-
-        var minCite = Environment.GetEnvironmentVariable("DOC_MIN_CITATIONS").GetTrimmedValueOrEmpty();
-        if (!string.IsNullOrEmpty(minCite) && int.TryParse(minCite, out var citeInt))
-        {
-            MinCitations = citeInt;
-        }
-
+        
         var minScore = Environment.GetEnvironmentVariable("DOC_MIN_QUALITY_SCORE").GetTrimmedValueOrEmpty();
         if (!string.IsNullOrEmpty(minScore) && double.TryParse(minScore, out var scoreDouble))
         {
@@ -245,7 +231,7 @@ public partial class DocumentPendingService
             path,
             OpenAIOptions.ChatModel,
             false, // 文档生成不需要代码分析功能
-            files, (builder => { builder.Plugins.AddFromObject(docs); })
+            files, (builder => { builder.Plugins.AddFromObject(docs,"Docs"); })
         );
 
         var chat = documentKernel.Services.GetService<IChatCompletionService>();
@@ -286,18 +272,14 @@ public partial class DocumentPendingService
             }
         }
 
-
-        // 保存原始内容，防止精炼失败时丢失
-        var originalContent = sr.ToString();
-
-        if (string.IsNullOrEmpty(docs.Content) && count < 3)
+        if (string.IsNullOrEmpty(docs.Content) && count < 5)
         {
             count++;
             goto reset;
         }
 
         // 先进行基础质量验证，避免对质量过差的内容进行精炼
-        var (isInitialValid, initialMessage, initialMetrics) = ValidateDocumentQuality(originalContent, catalog.Name);
+        var (isInitialValid, initialMessage, initialMetrics) = ValidateDocumentQuality(docs.Content, catalog.Name);
 
         if (!isInitialValid)
         {
@@ -320,8 +302,6 @@ public partial class DocumentPendingService
         {
             try
             {
-                history.AddAssistantMessage(originalContent);
-
                 var refineContents = new ChatMessageContentItemCollection
                 {
                     new TextContent(
@@ -342,6 +322,13 @@ public partial class DocumentPendingService
                         - Preserve the Microsoft documentation style approach
                         - Enhance conceptual understanding through improved explanations
                         - Strengthen the progressive learning structure
+
+                        **Refinement Protocol (tools only):**
+                        1) Use Docs.Read to review the current document thoroughly.
+                        2) Plan improvements that preserve structure and voice.
+                        3) Apply multiple small, precise Docs.Edit operations to improve clarity, add missing details, and strengthen diagrams/citations.
+                        4) After each edit, re-run Docs.Read to verify changes and continue iterating (at least 2–3 passes).
+                        5) Avoid full overwrites; prefer targeted edits that enhance existing content.
 
                         Build upon the solid foundation that exists to create even more comprehensive and valuable documentation.
                         """),

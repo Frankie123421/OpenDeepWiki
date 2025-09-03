@@ -61,7 +61,7 @@ public class DocumentOptions
     /// </summary>
     /// <returns></returns>
     public static bool RefineAndEnhanceQuality { get; set; } = true;
-    
+
     /// <summary>
     /// 是否启用仓库提交
     /// </summary>
@@ -77,13 +77,10 @@ public class DocumentOptions
     public static bool EnableCodeCompression { get; set; } = false;
 
     /// <summary>
-    /// 最大文件读取数量限制
-    /// 当AI读取文件数量超过此限制时，将阻止进一步的文件读取并发送强制提醒消息
-    /// 这有助于防止AI无限制地读取文件，提高处理效率
-    /// 默认值为10，设置为0表示不限制
+    /// 限制单个AI读取的最大token上下文比例是当前模型的多少，范围0.1-1.0
     /// </summary>
     /// <returns></returns>
-    public static int MaxFileReadCount { get; set; } = 5;
+    public static int ReadMaxTokens { get; set; } = 100000;
 
     /// <summary>
     /// Git代理设置
@@ -96,9 +93,9 @@ public class DocumentOptions
     public static void InitConfig(IConfiguration configuration)
     {
         configuration.GetSection(Name).Get<DocumentOptions>();
-        
+
         var enableWarehouseCommit = configuration.GetValue<bool?>($"ENABLE_WAREHOUSE_COMMIT") ?? true;
-        
+
         EnableWarehouseCommit = enableWarehouseCommit;
 
         var enableFileCommit = configuration.GetValue<bool?>($"ENABLE_FILE_COMMIT") ?? true;
@@ -167,12 +164,12 @@ public class DocumentOptions
             }
         }
 
-        var maxFileReadCount = configuration.GetValue<string>($"MAX_FILE_READ_COUNT");
+        var maxFileReadCount = configuration.GetValue<string>($"READ_MAX_TOKENS");
         if (!string.IsNullOrEmpty(maxFileReadCount))
         {
             if (int.TryParse(maxFileReadCount, out var count) && count >= 0)
             {
-                MaxFileReadCount = count;
+                ReadMaxTokens = count;
             }
         }
 

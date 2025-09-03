@@ -1,9 +1,11 @@
+using ImageAgent.Feishu;
 using KoalaWiki.BackendService;
 using KoalaWiki.Generate;
 using KoalaWiki.KoalaWarehouse.Extensions;
 using KoalaWiki.Mem0;
 using KoalaWiki.Options;
 using KoalaWiki.Services;
+using KoalaWiki.Services.Feishu.Feishu;
 using OpenDeepWiki.CodeFoundation;
 
 AppContext.SetSwitch("Microsoft.SemanticKernel.Experimental.GenAI.EnableOTelDiagnosticsSensitive", true);
@@ -33,6 +35,7 @@ OpenAIOptions.InitConfig(builder.Configuration);
 GithubOptions.InitConfig(builder.Configuration);
 GiteeOptions.InitConfig(builder.Configuration);
 DocumentOptions.InitConfig(builder.Configuration);
+FeishuOptions.InitConfig(builder.Configuration);
 
 #endregion
 
@@ -71,6 +74,19 @@ builder.Services.AddHostedService<AccessLogBackgroundService>();
 
 builder.Services.AddScoped<TranslateService>();
 
+builder.Services.AddTransient<FeiShuClient>();
+builder.Services.AddHostedService<FeishuStore>();
+builder.Services.AddTransient<FeishuHttpClientHandler>();
+
+builder.Services.AddHttpClient("FeiShu")
+    .ConfigureHttpClient((client) =>
+    {
+        client.Timeout = TimeSpan.FromSeconds(600);
+        client.DefaultRequestHeaders.Add("User-Agent", "OpenDeepWiki");
+        client.DefaultRequestVersion = new Version(2, 0);
+        client.DefaultRequestHeaders.Add("Accept", "application/json");
+    }).AddHttpMessageHandler<FeishuHttpClientHandler>();
+
 // 添加JWT认证
 builder.Services.AddAuthentication(options =>
 {
@@ -90,7 +106,7 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = jwtOptions.GetSymmetricSecurityKey(),
         ClockSkew = TimeSpan.Zero
     };
-    
+
     // 添加事件处理器以支持从cookie中读取token
     options.Events = new JwtBearerEvents
     {
@@ -99,19 +115,19 @@ builder.Services.AddAuthentication(options =>
             // 首先检查Authorization header
             var token = context.Request.Headers["Authorization"]
                 .FirstOrDefault()?.Split(" ").Last();
-            
+
             // 如果Authorization header中没有token，则检查cookie
             if (string.IsNullOrEmpty(token))
             {
                 token = context.Request.Cookies["token"];
             }
-            
+
             // 如果找到token，则设置到context中
             if (!string.IsNullOrEmpty(token))
             {
                 context.Token = token;
             }
-            
+
             return Task.CompletedTask;
         }
     };
@@ -120,10 +136,10 @@ builder.Services.AddAuthentication(options =>
 
 // 添加授权策略
 builder.Services.AddAuthorizationBuilder()
-             // 添加授权策略
-             .AddPolicy("RequireAdminRole", policy => policy.RequireRole("admin"))
-             // 添加授权策略
-             .AddPolicy("RequireUserRole", policy => policy.RequireRole("user", "admin"));
+    // 添加授权策略
+    .AddPolicy("RequireAdminRole", policy => policy.RequireRole("admin"))
+    // 添加授权策略
+    .AddPolicy("RequireUserRole", policy => policy.RequireRole("user", "admin"));
 
 builder.Services
     .AddCors(options =>

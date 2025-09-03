@@ -354,10 +354,34 @@
         "image_alt": "MCP测试效果"
       }
     },
+    "feishu_bot": {
+      "modal_title": "飞书Bot 配置",
+      "support_message": "将KoalaWiki集成到飞书群聊中，通过Bot进行智能问答",
+      "tutorial": {
+        "title": "使用教程",
+        "step1": {
+          "title": "1. 复制WebHook地址",
+          "copy_tooltip": "复制地址",
+          "copied_tooltip": "已复制"
+        },
+        "step2": {
+          "title": "2. 配置飞书WebHook",
+          "instructions": [
+            "在飞书群聊中添加自定义机器人",
+            "将上面复制的地址粘贴到WebHook地址栏",
+            "完成配置后即可在群聊中使用Bot功能"
+          ]
+        },
+        "step3": {
+          "title": "3. 开始使用",
+          "description": "配置完成后，您可以在飞书群聊中@机器人进行智能问答，获取当前仓库的文档内容和相关信息。"
+        }
+      }
+    },
     "sidebar": {
       "export": {
-        "button": "导出Markdown",
-        "modal_title": "导出Markdown",
+        "button": "导出MD",
+        "modal_title": "导出MD",
         "modal_content": "是否将当前文档导出为Markdown格式？",
         "ok_text": "导出",
         "cancel_text": "取消",
@@ -406,4 +430,4 @@
     },
     "ai_assistant": "{{name}} AI 助手"
   }
-} 
+}

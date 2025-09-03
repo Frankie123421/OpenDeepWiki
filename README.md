@@ -130,7 +130,11 @@ services:
       - ENABLE_WAREHOUSE_DESCRIPTION_TASK=true # Whether to enable warehouse description task
       - CATALOGUE_FORMAT=compact # Directory structure format (compact, json, pathlist, unix)
       - ENABLE_CODE_COMPRESSION=false # Whether to enable code compression
-      - MAX_FILE_READ_COUNT=10 # Maximum file read count limit for AI, prevents unlimited file reading (default: 10, 0 = no limit)
+      - READ_MAX_TOKENS=100000 # The maximum token limit for reading files in AI is set to prevent unlimited file reading. It is recommended to fill in 70% of the model's maximum token.
+      # Feishu Bot configuration (optional)
+      - FeishuAppId=
+      - FeishuAppSecret=
+      - FeishuBotName=KoalaWiki
 ```
 
 - AzureOpenAI and Anthropic configurations are similar, only need to adjust `ENDPOINT` and `MODEL_PROVIDER`.
@@ -291,6 +295,57 @@ graph TD
 - `CATALOGUE_FORMAT`: Directory structure format (compact, json, pathlist, unix)
 - `ENABLE_CODE_COMPRESSION`: Whether to enable code compression
 - `MAX_FILE_READ_COUNT`: Maximum file read count limit for AI, prevents unlimited file reading and improves processing efficiency (default: 10, 0 = no limit)
+- `FeishuAppId`: Feishu App ID (required if enabling Feishu Bot)
+- `FeishuAppSecret`: Feishu App Secret (required if enabling Feishu Bot)
+- `FeishuBotName`: Feishu bot display name (optional)
+
+---
+
+# Feishu Bot Integration
+
+- Purpose: Connect the current repository to Feishu group/DM as a knowledge bot for Q&A and content delivery.
+- Callback route: `/api/feishu-bot/{owner}/{name}` (copy the full URL from the "Feishu Bot" button on the repository page).
+- Requirement: Service must be publicly accessible; message encryption (Encrypt Key) is not supported yet.
+
+## 1) Create an App in Feishu Open Platform
+
+- Type: Internal App (for your organization).
+- Capability: Enable "Bot". Publish to the organization and install it.
+- Permissions (at minimum, per platform guidance):
+  - Message send/read related scopes (e.g., `im:message`, `im:message:send_as_bot`).
+  - Event subscription related scopes (for receiving message events).
+
+## 2) Configure Event Subscriptions (Important)
+
+- Open "Event Subscriptions" and disable "Encrypt Key".
+- Subscribe to event: `im.message.receive_v1`.
+- Request URL: `https://your-domain/api/feishu-bot/{owner}/{name}`.
+  - `{owner}` is the repository organization or owner, e.g., `AIDotNet`.
+  - `{name}` is the repository name, e.g., `OpenDeepWiki`.
+- Save to complete the URL verification (backend already handles the challenge response).
+
+Tip: You can also click the "Feishu Bot" button on the repository page to copy the dedicated callback URL.
+
+## 3) Configure Server Environment Variables
+
+Set the following in your backend service (see docker-compose example below):
+
+- `FeishuAppId`: Feishu App ID
+- `FeishuAppSecret`: Feishu App Secret
+- `FeishuBotName`: Bot display name (optional)
+
+## 4) Add the Bot to a Group and Use It
+
+- After installing the app, add the bot to the target group.
+- Group: @bot + your question (answers using the current repository's knowledge).
+- Direct Message: send your question directly.
+- Supports text and image replies (e.g., mind map images).
+
+## Feishu FAQ
+
+- No response/callback failed: ensure the Request URL is publicly reachable and that Nginx proxies `/api/` to the backend.
+- "Encryption enabled" message: disable Encrypt Key (current version doesn't support encrypted messages).
+- 403/insufficient permissions: make sure the app is installed in the org and required scopes/events are granted.
 
 ## Build for Different Architectures
 
@@ -323,3 +378,6 @@ This project is licensed under the MIT License. See [LICENSE](./LICENSE) for det
 # ⭐ Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=AIDotNet/OpenDeepWiki&type=Date)](https://www.star-history.com/#AIDotNet/OpenDeepWiki&Date)
+
+
+

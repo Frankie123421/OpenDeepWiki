@@ -94,19 +94,27 @@ public class DynamicOptionsManager
     /// </summary>
     private async Task LoadDocumentOptionsAsync()
     {
-        DocumentOptions.EnableIncrementalUpdate = await _configService.GetValueAsync<bool>("EnableIncrementalUpdate", true);
-        DocumentOptions.ExcludedFiles = await _configService.GetValueAsync<string[]>("ExcludedFiles") ?? Array.Empty<string>();
-        DocumentOptions.ExcludedFolders = await _configService.GetValueAsync<string[]>("ExcludedFolders") ?? Array.Empty<string>();
+        DocumentOptions.EnableIncrementalUpdate =
+            await _configService.GetValueAsync<bool>("EnableIncrementalUpdate", true);
+        DocumentOptions.ExcludedFiles =
+            await _configService.GetValueAsync<string[]>("ExcludedFiles") ?? Array.Empty<string>();
+        DocumentOptions.ExcludedFolders =
+            await _configService.GetValueAsync<string[]>("ExcludedFolders") ?? Array.Empty<string>();
         DocumentOptions.EnableSmartFilter = await _configService.GetValueAsync<bool>("EnableSmartFilter", true);
         DocumentOptions.CatalogueFormat = await _configService.GetValueAsync<string>("CatalogueFormat") ?? "compact";
-        DocumentOptions.EnableCodeDependencyAnalysis = await _configService.GetValueAsync<bool>("EnableCodeDependencyAnalysis", false);
-        DocumentOptions.EnableWarehouseFunctionPromptTask = await _configService.GetValueAsync<bool>("EnableWarehouseFunctionPromptTask", true);
-        DocumentOptions.EnableWarehouseDescriptionTask = await _configService.GetValueAsync<bool>("EnableWarehouseDescriptionTask", true);
+        DocumentOptions.EnableCodeDependencyAnalysis =
+            await _configService.GetValueAsync<bool>("EnableCodeDependencyAnalysis", false);
+        DocumentOptions.EnableWarehouseFunctionPromptTask =
+            await _configService.GetValueAsync<bool>("EnableWarehouseFunctionPromptTask", true);
+        DocumentOptions.EnableWarehouseDescriptionTask =
+            await _configService.GetValueAsync<bool>("EnableWarehouseDescriptionTask", true);
         DocumentOptions.EnableFileCommit = await _configService.GetValueAsync<bool>("EnableFileCommit", true);
-        DocumentOptions.RefineAndEnhanceQuality = await _configService.GetValueAsync<bool>("RefineAndEnhanceQuality", true);
+        DocumentOptions.RefineAndEnhanceQuality =
+            await _configService.GetValueAsync<bool>("RefineAndEnhanceQuality", true);
         DocumentOptions.EnableWarehouseCommit = await _configService.GetValueAsync<bool>("EnableWarehouseCommit", true);
-        DocumentOptions.EnableCodeCompression = await _configService.GetValueAsync<bool>("EnableCodeCompression", false);
-        DocumentOptions.MaxFileReadCount = await _configService.GetValueAsync<int>("MaxFileReadCount", 15);
+        DocumentOptions.EnableCodeCompression =
+            await _configService.GetValueAsync<bool>("EnableCodeCompression", false);
+        DocumentOptions.ReadMaxTokens = await _configService.GetValueAsync<int>("ReadMaxTokens", 90000);
 
         _logger.LogDebug("Document配置已加载");
     }
@@ -155,13 +163,13 @@ public class DynamicOptionsManager
         // 首先尝试获取带组前缀的值
         var groupKey = $"{group}.{key}";
         var value = await _configService.GetStringValueAsync(groupKey);
-        
+
         // 如果没有找到，尝试使用不带组前缀的键
         if (string.IsNullOrEmpty(value))
         {
             value = await _configService.GetStringValueAsync(key);
         }
-        
+
         return value;
     }
 
@@ -218,4 +226,4 @@ public class DynamicOptionsManager
             _logger.LogWarning("批量配置更新失败");
         }
     }
-} 
+}

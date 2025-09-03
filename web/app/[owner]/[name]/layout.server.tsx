@@ -3,8 +3,8 @@ import { documentCatalog } from '../../services/warehouseService';
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 
 import { Flexbox } from 'react-layout-kit';
-import { Button } from '@/components/ui/button';
 import MCPModal from './MCPModal';
+import FeishuBotModal from './FeishuBotModal';
 import ExportMarkdownButton from '@/app/components/ExportMarkdownButton';
 import TimeDisplay from '@/app/components/TimeDisplay';
 import RepositoryLanguageSwitcher from './RepositoryLanguageSwitcher';
@@ -102,6 +102,7 @@ export default async function RepositoryLayoutServer({
             )}
             <ExportMarkdownButton warehouseId={catalogData.warehouseId} />
             <MCPModal owner={owner} name={name} />
+            <FeishuBotModal owner={owner} name={name} />
           </Flexbox>
         </Flexbox>
       }
@@ -116,4 +117,4 @@ export default async function RepositoryLayoutServer({
     {children}
   </DocsLayout>
   );
-} 
+}

@@ -38,7 +38,13 @@ public static class PromptExtensions
                 3. Consider multiple angles, potential implications, and underlying complexity
                 4. Base your analysis on the actual content you've read, not assumptions
                 5. Do not ask the user if they want to proceed. The user will be assumed to proceed with everything.
-                6. Follow Google Diataxis standard
+                6. Follow Diataxis documentation standards precisely (Tutorial/How‑to/Reference/Explanation)
+
+                After generating the initial document with tool calls, perform MULTI‑PASS SELF‑REVIEW and OPTIMIZATION:
+                A. Verification pass: Use Docs.Read to inspect the entire document; check completeness, accuracy, and that all claims are supported by code.
+                B. Improvement pass: Use Docs.Edit to refine clarity, tighten structure, and enhance explanations while preserving the chosen Diataxis type and existing structure.
+                C. Quality pass: Ensure at least 3 Mermaid diagrams and proper [^n] citations; verify headings consistency, terminology, and formatting in the target language.
+                D. Final pass: Re‑read with Docs.Read and fix any remaining issues with additional Docs.Edit calls. Prefer several small, precise edits over one large overwrite.
 
                 Even for seemingly simple queries, explore the context thoroughly by reading the provided materials before responding. Never skip the content reading step when files or data are provided.
                 </system-reminder>

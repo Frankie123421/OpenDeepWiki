@@ -356,10 +356,34 @@
         "image_alt": "MCP Test Effect"
       }
     },
+    "feishu_bot": {
+      "modal_title": "Feishu Bot Configuration",
+      "support_message": "Integrate KoalaWiki into Feishu group chat for intelligent Q&A through Bot",
+      "tutorial": {
+        "title": "Tutorial",
+        "step1": {
+          "title": "1. Copy WebHook URL",
+          "copy_tooltip": "Copy URL",
+          "copied_tooltip": "Copied"
+        },
+        "step2": {
+          "title": "2. Configure Feishu WebHook",
+          "instructions": [
+            "Add a custom bot in Feishu group chat",
+            "Paste the copied URL into the WebHook address field",
+            "After configuration, you can use the Bot in group chat"
+          ]
+        },
+        "step3": {
+          "title": "3. Start Using",
+          "description": "After configuration, you can @mention the bot in Feishu group chat for intelligent Q&A and get document content and related information from the current repository."
+        }
+      }
+    },
     "sidebar": {
       "export": {
-        "button": "Export Markdown",
-        "modal_title": "Export Markdown",
+        "button": "Export MD",
+        "modal_title": "Export MD",
         "modal_content": "Export current documentation as Markdown format?",
         "ok_text": "Export",
         "cancel_text": "Cancel",
@@ -408,4 +432,4 @@
     },
     "ai_assistant": "{{name}} AI Assistant"
   }
-} 
+}

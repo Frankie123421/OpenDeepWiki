@@ -25,7 +25,7 @@ public partial class WarehouseProcessingTask
 
             // 1. 更新仓库
             var (commits, commitId) = GitService.PullRepository(document.GitPath, warehouse.Version,
-                warehouse.GitUserName, warehouse.GitPassword);
+                warehouse.Branch,warehouse.GitUserName, warehouse.GitPassword);
 
             logger.LogInformation("仓库更新完成，获取到 {CommitCount} 个提交记录", commits?.Count ?? 0);
             if (commits == null || commits.Count == 0)

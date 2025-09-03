@@ -388,7 +388,7 @@ KoalaChatWidget.init({
   return (
     <div className={`${className} space-y-6`}>
       {/* 头部卡片 */}
-      <Card className="border-none shadow-md bg-gradient-to-r from-primary/10 to-primary/5">
+      <Card className="border-none shadow-md bg-muted/50">
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
@@ -838,4 +838,4 @@ KoalaChatWidget.init({
   );
 };
 
-export default AppManagement; 
+export default AppManagement;

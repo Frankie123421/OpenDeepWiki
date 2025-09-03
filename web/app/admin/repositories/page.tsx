@@ -581,7 +581,7 @@ export default function RepositoriesPage() {
                 <TableRow key={repo.id}>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Folder className="h-4 w-4 text-blue-500" />
+                      <Folder className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <Link href={`/admin/repositories/${repo.id}`} className="font-medium hover:underline">
                           {repo.organizationName}/{repo.name}
@@ -884,7 +884,7 @@ export default function RepositoriesPage() {
                               </Badge>
                             )}
                             {status.status === 'generating' && (
-                              <Badge className="bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-100">
+                              <Badge className="bg-muted text-muted-foreground border-border hover:bg-muted">
                                 <Clock3 className="h-3 w-3 mr-1 animate-spin" />
                                 生成中
                               </Badge>
@@ -965,7 +965,7 @@ export default function RepositoriesPage() {
                           )}
                           
                           {status.status === 'generating' && (
-                            <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-md text-sm">
+                            <div className="flex items-center gap-2 px-3 py-2 bg-muted text-muted-foreground rounded-md text-sm">
                               <Clock3 className="h-4 w-4 animate-spin" />
                               正在生成中，预计需要3-5分钟...
                               {status.progress > 0 && ` (${status.progress}%)`}
@@ -978,7 +978,7 @@ export default function RepositoriesPage() {
                           <Label className="text-sm font-medium text-muted-foreground mb-3 block">支持功能</Label>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                             <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                              <div className="w-2 h-2 bg-muted-foreground rounded-full"></div>
                               <span>README文档翻译</span>
                             </div>
                             <div className="flex items-center gap-2">

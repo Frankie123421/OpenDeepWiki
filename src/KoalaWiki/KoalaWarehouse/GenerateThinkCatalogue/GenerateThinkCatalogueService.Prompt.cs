@@ -1,4 +1,4 @@
-﻿using KoalaWiki.Prompts;
+using KoalaWiki.Prompts;
 
 namespace KoalaWiki.KoalaWarehouse.GenerateThinkCatalogue;
 
@@ -8,29 +8,38 @@ public partial class GenerateThinkCatalogueService
         string catalogue, int attemptNumber)
     {
         var projectType = GetProjectTypeDescription(classifyType);
-
         var basePrompt = await PromptContext.Warehouse(nameof(PromptConstant.Warehouse.AnalyzeCatalogue),
             new KernelArguments()
             {
                 ["code_files"] = catalogue,
-                ["projectType"] = projectType
+                ["projectType"] = projectType,
+                ["language"] = Prompt.Language
             }, OpenAIOptions.AnalysisModel);
 
+        var toolUsage = "\n\nTOOL USAGE (DocsFunction-style):\n" +
+                        "- CORE CODE FIRST: Use File.Glob to list core files (entry points, configuration/DI, services, controllers, models, routes, build scripts), then use File.Read to inspect them BEFORE any catalogue generation.\n" +
+                        "- Use Catalogue.Write to persist the initial documentation_structure JSON.\n" +
+                        "- Perform 2–3 refinement passes using Catalogue.Read + Catalogue.Edit to: add subsections, deepen hierarchy, and enrich 'prompt' fields.\n" +
+                        "- If a major restructure is needed, rewrite the entire JSON via Catalogue.Write.\n" +
+                        "- Do NOT print or echo JSON in chat; use tools only.\n" +
+                        "- JSON MUST be valid, follow items/children schema, titles in kebab-case, top-level 'getting-started' then 'deep-dive'.\n" +
+                        "- Do NOT wrap JSON with code fences or XML/HTML tags.";
 
-        // 根据尝试次数增强提示词
+        // Attempt-based reinforcement aligned with AnalyzeCatalogue.md output contract
         var enhancementLevel = Math.Min(attemptNumber, 3);
         var enhancement = enhancementLevel switch
         {
-            0 => "\n\nGenerate documentation catalog in the specified hierarchical JSON format within <documentation_structure> tags.",
+            0 =>
+                "\n\nPass 1: Create minimal valid JSON and SAVE using Catalogue.Write. Include 'getting-started' and 'deep-dive' with essential children. Kebab-case titles; no fences/tags.",
             1 =>
-                "\n\nIMPORTANT: You must respond with valid JSON using the items/children structure within <documentation_structure> tags. Follow the exact format specified.",
+                "\n\nPass 2: Use Catalogue.Read then Catalogue.Edit to DEEPEN the structure: add Level 2/3 subsections for core components, features, data models, and integrations. Keep ordering and naming consistent. Prefer localized, incremental edits rather than full rewrites.",
             2 =>
-                "\n\nCRITICAL: Previous attempts failed. Generate ONLY valid JSON within <documentation_structure> tags. Use the hierarchical items structure with title, name, and children fields.",
+                "\n\nPass 3: Use Catalogue.Read/Edit to ENRICH each section's 'prompt' with actionable writing guidance: scope, code areas to analyze, expected outputs. Avoid duplication.",
             _ =>
-                "\n\nFINAL ATTEMPT: Generate minimal but valid JSON structure. Must include: {\"items\":[{\"title\":\"getting-started\",\"name\":\"入门指南\",\"children\":[...]},{\"title\":\"deep-dive\",\"name\":\"深入解剖\",\"children\":[...]}]}."
+                "\n\nIf still incomplete: perform targeted Edit operations to fix remaining gaps. Only rewrite via Catalogue.Write if necessary. Ensure final JSON is valid and comprehensive."
         };
 
-        return basePrompt + enhancement;
+        return toolUsage + basePrompt + enhancement;
     }
 
 

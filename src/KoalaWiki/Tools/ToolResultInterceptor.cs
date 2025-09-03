@@ -1,6 +1,6 @@
-﻿namespace KoalaWiki.Functions;
+﻿namespace KoalaWiki.Tools;
 
-public class FunctionResultInterceptor : IFunctionInvocationFilter
+public class ToolResultInterceptor : IFunctionInvocationFilter
 {
     public async Task OnFunctionInvocationAsync(FunctionInvocationContext context,
         Func<FunctionInvocationContext, Task> next)

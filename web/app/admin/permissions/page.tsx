@@ -88,7 +88,7 @@ export default function PermissionsPage() {
     {
       title: '角色管理',
       description: '管理系统角色和角色权限',
-      icon: <Users className="h-6 w-6 text-blue-500" />,
+      icon: <Users className="h-6 w-6 text-muted-foreground" />,
       path: '/admin/roles',
       color: 'blue',
     },
@@ -137,7 +137,7 @@ export default function PermissionsPage() {
                 <p className="text-sm text-muted-foreground">总用户数</p>
                 <p className="text-2xl font-bold">{loading ? '...' : stats.totalUsers}</p>
               </div>
-              <User className="h-8 w-8 text-blue-500" />
+              <User className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>

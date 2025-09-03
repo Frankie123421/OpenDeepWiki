@@ -33,7 +33,7 @@ const footerLinks = {
     { titleKey: 'footer.changelog', link: 'https://github.com/AIDotNet/OpenDeepWiki/blob/main/README.md' },
   ],
   resources: [
-    { titleKey: 'footer.docs', link: 'https://github.com/AIDotNet/OpenDeepWiki/blob/main/README.md' },
+    { titleKey: 'footer.docs', link: 'https://token-ai.feishu.cn/wiki/space/7534927001112150018' },
     { titleKey: 'footer.api', link: 'https://github.com/AIDotNet/OpenDeepWiki/blob/main/README.md' },
     { titleKey: 'footer.faq', link: 'https://github.com/AIDotNet/OpenDeepWiki/issues' },
   ],
@@ -179,11 +179,11 @@ export default function HomeClient({
 
   return (
     <>
-      <div className="min-h-screen hero-section">
+      <div className="min-h-screen bg-background">
         {/* 顶部导航 */}
-        <header className="sticky top-0 z-50 glass-effect border-b">
-          <div className="max-w-7xl mx-auto container-padding h-16 flex items-center justify-between">
-            <div className="flex items-center space-x-4 animate-fade-in">
+        <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div className="flex items-center space-x-4">
               <Avatar className="h-10 w-10">
                 <AvatarImage src="/logo.png" alt="OpenDeepWiki" />
                 <AvatarFallback className="bg-primary text-primary-foreground font-bold">ODW</AvatarFallback>
@@ -191,7 +191,7 @@ export default function HomeClient({
               <h1 className="text-xl font-bold text-foreground">OpenDeepWiki</h1>
             </div>
 
-            <div className="flex items-center space-x-4 animate-fade-in">
+            <div className="flex items-center space-x-4">
               <LanguageSwitcher />
               <Button variant="outline" size="sm" asChild>
                 <a href={homepage} target="_blank" rel="noopener noreferrer">
@@ -213,10 +213,10 @@ export default function HomeClient({
         </header>
 
         {/* 主要内容 */}
-        <main className="max-w-7xl mx-auto container-padding py-8">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Hero 区域 */}
-          <div className="text-center mb-12 animate-slide-up">
-            <h2 className="text-hero mb-6 gradient-text">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-foreground">
               {t('home.title')}
             </h2>
           </div>
@@ -254,32 +254,34 @@ export default function HomeClient({
 
           {/* 仓库列表 */}
           {repositories.length === 0 ? (
-            <Card className="card-modern animate-fade-in">
-              <CardContent className="p-12 text-center">
-                <div className="space-y-4">
-                  <div className="text-6xl">📚</div>
-                  <div className="max-w-md mx-auto">
-                    <h3 className="text-lg font-semibold text-foreground mb-2">
+            <Card className="border-dashed border-2 border-muted-foreground/25 bg-muted/50">
+              <CardContent className="flex flex-col items-center justify-center py-16 px-8 text-center">
+                <div className="rounded-full bg-muted p-4 mb-6">
+                  <div className="text-4xl">📚</div>
+                </div>
+                <div className="space-y-4 max-w-md">
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-semibold tracking-tight">
                       {searchValue ? t('home.repo_list.not_found', { keyword: searchValue }) : t('home.repo_list.empty')}
                     </h3>
-                    <p className="text-muted-foreground mb-6">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
                       {searchValue ? t('home.repo_list.try_adjust_keywords') : t('home.repo_list.get_started')}
                     </p>
-                    <Button
-                      onClick={() => setFormVisible(true)}
-                      size="lg"
-                      className="px-8"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      {t('home.repo_list.add_now')}
-                    </Button>
                   </div>
+                  <Button
+                    onClick={() => setFormVisible(true)}
+                    size="lg"
+                    className="mt-6"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('home.repo_list.add_now')}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           ) : (
             <>
-              <div className="animate-fade-in">
+              <div>
                 <RepositoryList repositories={repositories} />
               </div>
               {!searchValue && initialTotal > pageSize && (
@@ -364,8 +366,8 @@ export default function HomeClient({
         </main>
 
         {/* 页脚 */}
-        <footer className="glass-effect border-t mt-12">
-          <div className="max-w-7xl mx-auto container-padding py-12">
+        <footer className="bg-background/80 backdrop-blur-md border-t mt-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             {/* 交流群区域 */}
             <div className="mb-8">
               <div className="flex justify-center">
@@ -543,4 +545,4 @@ export default function HomeClient({
       <Toaster />
     </>
   );
-} 
+}

@@ -9,38 +9,40 @@ public class GitService
 {
     public static (string localPath, string organization) GetRepositoryPath(string repositoryUrl)
     {
-        var uri = new Uri(repositoryUrl);  
-        var segments = uri.Segments;  
-        
-        if (segments.Length < 2)  
-        {  
-            throw new ArgumentException("仓库URL格式不正确，至少需要包含组织名和仓库名");  
-        }  
-        
-        string organization;  
-        string repositoryName;  
-        
-        
+        var uri = new Uri(repositoryUrl);
+        var segments = uri.Segments;
+
+        if (segments.Length < 2)
+        {
+            throw new ArgumentException("仓库URL格式不正确，至少需要包含组织名和仓库名");
+        }
+
+        string organization;
+        string repositoryName;
+
+
         // 对于 GitLab，最后一个段是仓库名，前面的都是组织/子组织  
-        repositoryName = segments[segments.Length - 1].Trim('/').Replace(".git", "");  
-        
+        repositoryName = segments[segments.Length - 1].Trim('/').Replace(".git", "");
+
         // 组织名包含所有中间路径，用下划线连接以避免路径冲突  
-        var orgParts = new List<string>();  
-        for (int i = 1; i < segments.Length - 1; i++)  
-        {  
-            orgParts.Add(segments[i].Trim('/'));  
-        }  
-        organization = string.Join("/", orgParts);  
-        
-    
+        var orgParts = new List<string>();
+        for (int i = 1; i < segments.Length - 1; i++)
+        {
+            orgParts.Add(segments[i].Trim('/'));
+        }
+
+        organization = string.Join("/", orgParts);
+
+
         // 拼接本地路径  
-        var repositoryPath = Path.Combine(Constant.GitPath, organization, repositoryName);  
+        var repositoryPath = Path.Combine(Constant.GitPath, organization, repositoryName);
         return (repositoryPath, organization);
     }
 
     public static (List<Commit> commits, string Sha) PullRepository(
         [Description("仓库地址")] string repositoryUrl,
         string commitId,
+        string branch,
         string userName = "",
         string password = "")
     {
@@ -69,7 +71,8 @@ public class GitService
         // 先克隆
         if (!Directory.Exists(repositoryUrl))
         {
-            throw new Exception("仓库不存在，请先克隆仓库");
+            // 克隆
+            CloneRepository(repositoryUrl, userName, password, branch);
         }
 
         if (!Directory.Exists(repositoryUrl))
@@ -164,7 +167,7 @@ public class GitService
             {
                 // 删除目录以后在尝试一次
                 Directory.Delete(localPath, true);
-                
+
                 var retryFetchOptions = new FetchOptions
                 {
                     Depth = 0,

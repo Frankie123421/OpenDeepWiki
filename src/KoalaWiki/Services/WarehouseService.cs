@@ -8,6 +8,7 @@ using KoalaWiki.Core;
 using KoalaWiki.Domains.DocumentFile;
 using KoalaWiki.Dto;
 using KoalaWiki.Functions;
+using KoalaWiki.Tools;
 using LibGit2Sharp;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -989,7 +990,7 @@ public class WarehouseService(
             throw new NotFoundException("文件不存在");
         }
 
-        var fileFunction = new FileFunction(query.GitPath, null);
+        var fileFunction = new FileTool(query.GitPath, null);
 
         var result = await fileFunction.ReadFileAsync(path);
 
@@ -1140,7 +1141,7 @@ public class WarehouseService(
             throw new Exception("Document not found");
         }
 
-        var fileFunction = new FileFunction(document.GitPath, null);
+        var fileFunction = new FileTool(document.GitPath, null);
 
         var value = await fileFunction.ReadFileAsync(filePath);
 

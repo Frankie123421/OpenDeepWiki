@@ -200,8 +200,8 @@ export default function Dashboard() {
     {
       title: '总用户数',
       value: stats.systemStats.totalUsers,
-      icon: <Users className="h-6 w-6 text-blue-600" />,
-      iconBg: 'bg-blue-100',
+      icon: <Users className="h-6 w-6 text-muted-foreground" />,
+      iconBg: 'bg-muted',
       growth: `${stats.systemStats.userGrowthRate >= 0 ? '+' : ''}${stats.systemStats.userGrowthRate}%`,
       growthRate: stats.systemStats.userGrowthRate,
     },
@@ -339,7 +339,7 @@ export default function Dashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-blue-600" />
+              <Users className="h-5 w-5 text-muted-foreground" />
               最近注册的用户
             </CardTitle>
           </CardHeader>
@@ -357,7 +357,7 @@ export default function Dashboard() {
                   <TableRow key={user.name}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-medium">
+                        <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
                           {user.name.slice(0, 1).toUpperCase()}
                         </div>
                         <div>

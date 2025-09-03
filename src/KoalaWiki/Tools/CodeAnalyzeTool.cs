@@ -1,10 +1,9 @@
 ﻿using System.ComponentModel;
 using System.Text.Json;
-using Microsoft.SemanticKernel;
 
-namespace KoalaWiki.Functions;
+namespace KoalaWiki.Tools;
 
-public class CodeAnalyzeFunction(string gitPath)
+public class CodeAnalyzeTool(string gitPath)
 {
     /// <summary>
     /// Analyzes the dependency tree of a specified function within a file.

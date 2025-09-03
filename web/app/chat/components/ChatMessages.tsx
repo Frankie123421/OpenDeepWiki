@@ -106,8 +106,8 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
               
             case 'tool':
               return (
-                <div key={`tool-${index}`} className="p-3 bg-blue-50/50 dark:bg-blue-950/20 rounded-md border border-blue-200 dark:border-blue-900/30 text-sm">
-                  <div className="flex items-center gap-1.5 mb-2 text-blue-600 dark:text-blue-400 font-medium">
+                <div key={`tool-${index}`} className="p-3 bg-muted/50 rounded-md border border-border text-sm">
+                  <div className="flex items-center gap-1.5 mb-2 text-muted-foreground font-medium">
                     <Wrench className="h-4 w-4" />
                     <span>工具调用: {contentItem.toolName || contentItem.toolId}</span>
                   </div>

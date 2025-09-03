@@ -10,15 +10,15 @@ Transform repository code analysis into hierarchical documentation catalogs with
 
 ## Input Analysis
 
-**Repository Code Files:**
+Repository Code Files:
 <code_files>
 {{$code_files}}
 </code_files>
 
-**Project Type Context:**
+Project Type Context:
 {{$projectType}}
 
-**Target Language:**
+Target Language:
 {{$language}}
 
 **IMPORTANT: ALL generated content, titles, descriptions, and requirements must be written in {{$language}}.**
@@ -62,64 +62,31 @@ Transform repository code analysis into hierarchical documentation catalogs with
 4. **Use Case Implementation** - How different use cases are handled in the codebase
 5. **Feature Interaction Matrix** - Dependencies and interactions between different features
 6. **Performance & Scalability** - How each feature performs and scales under load
-7. **Error Handling & Edge Cases** - How features handle failures and boundary conditions
-8. **Testing & Validation** - Testing strategies and validation mechanisms for each feature
 
 ## Content Generation Strategy
 
 ### Getting Started Guide Content:
-- **Project Overview**: Core purpose, technology stack, target users, key benefits
-- **Environment Setup**: Prerequisites, installation, configuration, verification steps
-- **Core Concepts**: Essential terminology, architectural principles, key abstractions  
-- **Basic Usage**: First examples, common workflows, fundamental operations
-- **Quick Reference**: Essential commands, configurations, troubleshooting guide
+- Core purpose, technology stack, target users, key benefits
+- Prerequisites, installation, configuration, verification steps
+- Essential terminology, architectural principles, key abstractions  
+- First examples, common workflows, fundamental operations
+- Essential commands, configurations, troubleshooting guide
 
 ### Deep Dive Analysis Content:
-- **Architecture Analysis**: System design, component relationships, data flow patterns
-- **Core Components**: Detailed analysis of system modules, services, and data layers
-- **Feature Implementation**: In-depth examination of key features and business logic
-- **Technical Details**: Algorithms, design patterns, performance optimization
-- **Integration & APIs**: External interfaces, plugin systems, extension mechanisms
-- **Advanced Topics**: Deployment, scaling, customization, development workflows
+- System design, component relationships, data flow patterns
+- Detailed analysis of system modules, services, and data layers
+- In-depth examination of key features and business logic
+- Algorithms, design patterns, performance optimization
+- External interfaces, plugin systems, extension mechanisms
 
 ## Output Format
 
-Generate a hierarchical JSON structure organized into two main modules based on actual project analysis. The structure should dynamically adapt to the repository's specific features and complexity.
+Generate a hierarchical JSON structure organized into two main modules based on actual project analysis. The structure should dynamically adapt to the repository's specific features and complexity. Persist JSON using the Catalogue.Write tool and refine using Catalogue.Edit. Do NOT print JSON in chat, do NOT use code fences or tags.
 
-### Dynamic Structure Example:
-
-```json
-{
-  "items": [
-    {
-      "title": "getting-started",
-      "name": "[Getting Started Guide Name]",
-      "description": "Help users quickly understand and start using the project",
-      "children": [
-        // Dynamic sections based on project analysis:
-        // - project-overview (always included)
-        // - environment-setup (if setup is complex)
-        // - core-concepts (if project has complex abstractions)
-        // - basic-usage (always included)
-        // - quick-reference (if many commands/configurations)
-      ]
-    },
-    {
-      "title": "deep-dive",
-      "name": "[Deep Dive Analysis Name]", 
-      "description": "In-depth analysis of core components and functionality",
-      "children": [
-        // Dynamic sections based on actual project features:
-        // - architecture-analysis (always included)
-        // - core-components (if project has multiple modules/services)
-        // - feature-implementation (if project has distinct features)
-        // - technical-implementation (always included)
-        // - integration-apis (if project has APIs/integrations)
-      ]
-    }
-  ]
-}
-```
+### Output Contract (concise)
+- Root JSON: { "items": Section[] }
+- Section: { "title": kebab-case, "name": {{$language}}, "prompt": {{$language}}, "children"?: Section[] }
+- Top-level modules: include 'getting-started' and 'deep-dive' (in this order)
 
 ### Dynamic Section Generation Rules:
 
@@ -137,8 +104,17 @@ Generate a hierarchical JSON structure organized into two main modules based on 
 
 **Sub-section Creation:**
 - Break down sections into children only when they contain multiple distinct aspects
-- Create 2-3 nesting levels maximum based on actual complexity
+- Choose nesting depth based on actual complexity
 - Each child should represent a meaningful, separable analysis area
+
+**Refinement (concise):**
+- Create children only when a parent topic has multiple responsibilities, dimensions, cross-module dependencies, or file clusters.
+- Depth and item count are driven by actual complexity; do not impose artificial limits on item count or text length.
+- Align node names with source directories/modules/services/APIs/entities; avoid invented or irrelevant items.
+
+**Grounding & Output:**
+- Base all structure strictly on code_files; no speculation.
+- Output the catalog JSON only; no explanations or code fences.
 
 ## Section Structure Guidelines
 
@@ -148,10 +124,10 @@ Generate a hierarchical JSON structure organized into two main modules based on 
 - `requirement`: Specific, actionable generation instruction in {{$language}}
 - `children`: Optional array for complex topics requiring detailed breakdown
 
-**Nesting Levels:**
-- **Level 1**: Main sections (overview, setup, analysis, etc.)
-- **Level 2**: Sub-topics within main sections (components, features, etc.)
-- **Level 3**: Detailed aspects for complex features (algorithms, patterns, etc.)
+**Nesting Levels (examples):**
+- Main sections (overview, setup, analysis, etc.)
+- Sub-topics within main sections (components, features, etc.)
+- Detailed aspects for complex features (algorithms, patterns, etc.)
 
 **Sub-section Creation Rules:**
 - System modules with multiple responsibilities
@@ -160,34 +136,34 @@ Generate a hierarchical JSON structure organized into two main modules based on 
 - Business logic with multiple workflows
 - Integration patterns with various approaches
 
+**Clustering Guidance (concise):**
+- Module clustering: by directories, name prefixes, or layers (e.g., Services, Controllers, Components).
+- Feature clustering: by user use cases, routes, pages, interaction flows.
+- Data clustering: by entities/models/schemas/tables and their relationships.
+- API/integration clustering: by resource endpoints, external systems, messaging/cache/auth boundaries.
+- Complexity trigger: when multi-responsibility, cross-module dependencies, or file clusters exist, add subsections and deeper levels.
+
 ## Content Depth Requirements
 
 ### Getting Started Guide Requirements:
-- **Project Overview**: Technology stack analysis, architectural overview, core value analysis
-- **Environment Setup**: Step-by-step installation, dependency management, configuration validation
-- **Core Concepts**: Technical terminology, system abstractions, component relationships
-- **Basic Usage**: Practical examples, workflow demonstrations, operational procedures
+- Technology stack analysis, architectural overview, core value analysis
+- Step-by-step installation, dependency management, configuration validation
+- Technical terminology, system abstractions, component relationships
+- Practical examples, workflow demonstrations, operational procedures
 
 ### Deep Dive Analysis Requirements:
-- **Architecture Analysis**: Design pattern identification, component interaction mapping, scalability analysis
-- **Core Components**: 
-  - System module responsibilities and interfaces
-  - Service layer architecture and dependencies  
-  - Data model relationships and schemas
-  - API design patterns and endpoints
-- **Feature Implementation**:
-  - Core functionality breakdown with feature decomposition into sub-components
-  - Business logic and workflow analysis with step-by-step process mapping  
-  - Feature architecture patterns and structural organization
-  - Use case implementation analysis and user scenario handling
-  - Feature interaction matrix and dependency mapping
-  - Performance characteristics and scalability analysis per feature
-  - Error handling mechanisms and edge case management
-  - Testing strategies and validation approaches for each functional module
-- **Technical Implementation**: Algorithm complexity, design pattern usage, security implementations
-- **Integration & APIs**: External system interfaces, plugin architectures, extension mechanisms
+- Design pattern identification, component interaction mapping, scalability analysis
+- System module responsibilities and interfaces, service layer architecture and dependencies, data model relationships and schemas, API design patterns and endpoints
+- Core functionality breakdown with feature decomposition into sub-components, business logic and workflow analysis with step-by-step process mapping, feature architecture patterns and structural organization, use case implementation analysis and user scenario handling, feature interaction matrix and dependency mapping, performance characteristics and scalability analysis per feature, error handling mechanisms and edge case management, testing strategies and validation approaches for each functional module
+- Algorithm complexity, design pattern usage, security implementations
+- External system interfaces, plugin architectures, extension mechanisms
 
 ## Execution Instructions
+
+0. **Core Code First (Mandatory):**
+   - Use File.Glob to identify core files: entry points (Program/Main/App), configuration/DI, services, controllers, models/entities, routing, build scripts, key configs (csproj/package.json), README.
+   - Use File.Read to read these files thoroughly before any catalogue generation.
+   - Prefer specific glob patterns over broad scans; read multiple key files in one response if needed.
 
 1. **Repository Analysis**:
    - Analyze provided code files to understand project purpose, architecture, and features
@@ -196,9 +172,9 @@ Generate a hierarchical JSON structure organized into two main modules based on 
    - Map system modules, service layers, data models, and API interfaces
 
 2. **Documentation Structure Generation**:
-   - Dynamically create "Getting Started Guide" with 3-6 sections based on actual project needs
-   - Dynamically create "Deep Dive Analysis" with 3-7 sections based on project complexity and features
-   - Adapt nesting levels (2-3 levels) based on actual component complexity, not fixed structure
+   - Dynamically create "Getting Started Guide" with sections driven by actual project needs
+   - Dynamically create "Deep Dive Analysis" with sections aligned to project complexity and features
+   - Adapt nesting levels to reflect actual component complexity
    - Only include sections that are relevant to the actual project (don't force unnecessary sections)
    - Create sub-sections only when the parent section contains multiple distinct, separable aspects
    - Structure should reflect the project's actual organization and feature set
@@ -211,15 +187,33 @@ Generate a hierarchical JSON structure organized into two main modules based on 
    - Adapt workflow analysis requirements to the project's actual business processes
    - Scale technical depth requirements based on the project's actual implementation sophistication
    - Ensure all requirements focus on real, identifiable elements in the codebase
-   - Requirements should be written in {{$language}} and match the project's domain
+   - Section prompts ("prompt" field) should be written in {{$language}} and provide actionable guidance for generating documentation for that section
 
-4. **Quality Assurance**:
-   - Verify that the structure accurately reflects the actual project's architecture and features
-   - Ensure no unnecessary sections are included (only what's relevant to this specific project)
-   - Validate that complexity levels match the real sophistication of the codebase
-   - Confirm that all sections and requirements are grounded in actual code analysis
-   - Ensure logical progression that matches the project's natural learning curve
-   - Validate that technical depth is appropriate for the project's actual implementation level
+## Iterative Refinement Protocol
+
+Follow a multi-pass approach to improve granularity and completeness:
+
+1. Initial Skeleton (Catalogue.Write):
+   - Create minimal valid JSON with the two top-level modules and essential child sections.
+   - Ensure kebab-case titles and correct ordering.
+
+2. Depth Expansion (Catalogue.Read + Catalogue.Edit):
+   - Decompose large modules into meaningful Level 2 and Level 3 subsections where complexity exists.
+   - Add children arrays for modules with multiple responsibilities, features, or components.
+   - Normalize titles and ensure consistent section naming.
+
+3. Prompt Enrichment (Catalogue.Edit):
+   - For each section, populate the "prompt" field with concrete, actionable writing instructions tailored to that section.
+   - Include scope, expected depth, code areas to examine, and deliverables.
+
+4. Coverage & Balance (Catalogue.Edit):
+   - Balance Getting Started vs Deep Dive: foundational guidance vs in-depth technical analysis.
+   - Ensure feature modules reflect real code clusters (services, APIs, models, pages/routes, etc.).
+
+5. Validation (Catalogue.Read):
+   - Validate JSON remains valid after edits; if large restructuring is required, re-write complete JSON via Catalogue.Write.
+
+Aim for practical granularity: under 'deep-dive', include core components, feature modules, data models, and integration points with 2–3 levels of depth where warranted by the codebase.
 
 ## Success Criteria
 

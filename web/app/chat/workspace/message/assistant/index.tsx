@@ -528,7 +528,7 @@ export default function AssistantMessage({ messageItem, handleDelete,
             if (functionName === 'FileFunction-FileFromLine') {
                 return { label: '读取文件内容', color: 'text-green-600 dark:text-green-400' };
             } else if (functionName === 'FileFunction-FileInfo') {
-                return { label: '获取文件信息', color: 'text-blue-600 dark:text-blue-400' };
+                return { label: '获取文件信息', color: 'text-muted-foreground' };
             }
             else if (functionName === 'RagFunction-RagSearch') {
                 return { label: 'RAG搜索', color: 'text-purple-600 dark:text-purple-400' };

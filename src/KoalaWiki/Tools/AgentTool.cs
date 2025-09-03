@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
 
-namespace KoalaWiki.Functions;
+namespace KoalaWiki.Tools;
 
-public class AgentFunction
+public class AgentTool
 {
     [KernelFunction, Description("""
                                  Use this tool to engage in deep, structured thinking about complex problems, user requirements, or challenging decisions. This tool helps you process information systematically and provides your thought process back to enhance understanding and decision-making.

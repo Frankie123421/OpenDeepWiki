@@ -3,8 +3,6 @@
 import { getWarehouse } from './services/warehouseService';
 import { getBasicHomeStats } from './services/statsService';
 import HomeClient from './components/HomeClient';
-import { Suspense } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
 import { cookies } from 'next/headers';
 
 export default async function Home({
@@ -41,7 +39,6 @@ export default async function Home({
   const initialTotal = response.success ? response.data.total : 0;
 
   return (
-    <Suspense fallback={<div style={{ textAlign: 'center', marginTop: '20%' }}><Skeleton className="w-32 h-32 mx-auto" /></div>}>
       <HomeClient
         initialRepositories={initialRepositories}
         initialTotal={initialTotal}
@@ -50,6 +47,5 @@ export default async function Home({
         initialSearchValue={keyword}
         initialStats={statsData}
       />  
-    </Suspense>
   );
 }
